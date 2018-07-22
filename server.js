@@ -2,8 +2,8 @@
   var server=require("http").createServer(start);
   var io = require("socket.io")(server);
   var shtikles = [];
-  var port = process.env.OPENSHIFT_NODEJS_PORT, 
-        id = process.env.OPENSHIFT_NODEJS_IP;
+  var port = process.env.OPENSHIFT_NODEJS_PORT || 8080, 
+        id = process.env.OPENSHIFT_NODEJS_IP || "10.0.0.36";
 
   function start(r,res) {
     console.log("Hello World!", process.env); 

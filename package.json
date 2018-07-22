@@ -3,11 +3,11 @@
     "version": "0.0.1",
     "description": "App",
     "dependencies": {
-        "socket.io": "^2.1.1"
+        "socket.io": "^1.7.4"
     },
     "author": "us",
-    "main":"server.js",
-    "scripts":{
-        "start":"node server.js"
+    "main": "server.js",
+    "scripts": {
+        "start": "node server.js"
     }
 }

@@ -1,20 +1,110 @@
 <html>
 <head>
     <style>
-    .selected {
-        background:green;
+   
+
+
+    .selectable {
+        cursor:pointer;
     }
+
+    #maamer_content {
+        user-select:none;
+    }
+
+    #maamer_content span {
+        padding:3px;
+        display:inline-block;
+        box-decoration-break:clone;
+        box-sizing:border-box;
+    }
+
+     #maamer_content span.selected {
+        box-shadow: 0 4px 2px -2px black;
+        
+    }
+
+    #maamer_content .selectable:hover {
+        background:yellow;
+        box-shadow: 3px 0 0 yellow, -3px 0 0 yellow;
+    }
+
+ 
+    #word_edit {
+        position:absolute;
+        max-width:300px;
+        border:1px #0F23D5 solid;
+        padding:4px;
+        background:#A1C9E4;
+        border-radius:15px;
+        padding:15px;
+    }
+
+    
+
+    #word_edit button {
+        float:right; 
+    }
+
+    #word_edit:after, #word_edit:before {
+        content:'';
+        position:absolute;
+        top:100%;
+        left:50%;
+        width:0;
+        height:0;
+        
+    }
+    input, .new_input {
+      
+        border:0;
+        outline:0;
+        background:transparent;
+        border-bottom:1px solid black;
+       
+    }
+
+   
+    .titlething {
+        display:inline-block;
+       text-align:right;
+       width:80px;
+     margin-left:-20px;
+        
+    }
+
+    #word_edit:after {
+        border-top:15px solid #A1C9E4;
+        border-right:15px solid transparent;
+        border-bottom:15px solid transparent;
+        border-left:15px solid transparent;
+        margin-left:-15px;
+    }
+
+    #word_edit:before {
+        border-top:17px solid #0F23D5;
+        border-right:17px solid transparent;
+        border-bottom:17px solid transparent;
+        border-left:17px solid transparent;
+        margin-left:-17px;
+    }
+
+  
     </style>
 <script src="/socket.io/socket.io.js"></script>
 <script>
     function q(ph) {
         return document.querySelectorAll(ph);
     }
+    function insertAfter(newNode, referenceNode) {
+        referenceNode.parentNode.insertBefore(newNode, referenceNode.nextSibling);
+    }
 </script>
 <script>
-    var socket = io('http://chavrusa-chavrusa.193b.starter-ca-central-1.openshiftapps.com/:8000/', {'forceNew':true });
+    var socket = io("10.0.0.36:8080");
     var maamerTxt = '';
     var shtikles = [];
+    var finishedLine = false;
     socket.on("maamer loaded", function(maamer) {
         maamerTxt = maamer;
         maamerTxt = addSpansToText(maamerTxt);
@@ -30,31 +120,97 @@
 
     function makeClickable() {
         var spans = q("#maamer_content span");
-        
         spans.forEach(function(item, idx) {
-            shtikles[idx] = {id:idx, word:item, selected:false};
+            shtikles[idx] = {id:idx, word:item.innerHTML, selected:false, obj:item};
             if(item.hasAttribute("data-word")) {
                 item.addEventListener("click", function(e) {
+                    q(".selected").forEach(function(z,i) {
+                        z.className = "selectable";
+                    });
                     item.className = "selected";
+                    
+                    
+                    updateEditbox(idx);
                     socket.emit("word clicked", idx);
                 });
             }
         });
       //  socket.emit("word list", shtikles);
     }
+    function updateSelection() {
+        for(var i in shtikles) {
+            if(shtikles[i]) {
+                if(shtikles[i].selected) {
+                    shtikles[i].obj.className = "selected";
+                } else {
+                    shtikles[i].obj.className = "selectable";
+                }
+            }
+        }
+    }
+
+    function updateEditbox(idx) {
+        var x = shtikles[idx].obj.offsetLeft,
+        y = shtikles[idx].obj.offsetTop,
+        height=word_edit.clientHeight,
+        width=word_edit.clientWidth,
+        wordWidth=shtikles[idx].obj.clientWidth;
+        x -= width/2; 
+        x += wordWidth/2;
+        y -= (height + 17);
+        elementToPosition(word_edit,x,y);
+   //     current_word.innerHTML = shtikles[idx].word;
+    }
+
+    function elementToPosition(el,x,y) {
+        el.style.left = x + "px";
+        el.style.top = y + "px";
+    }
 
     function addSpansToText(txt) {
         return txt.split(' ').map((z, i) => {
             return (z.replace(new RegExp("([\u0590-\u05FF\"]+)|([^\u0590-\u05FF\"]+)","g"), (t) => {
-                return /[\u0590-\u05FF\"]+/.test(t) ? `<span data-id="${i}" data-word="${t}">${t}</span>` : `<span data-id="${i}">${t}</span>`;
+                return /[\u0590-\u05FF\"]+/.test(t) ? `<span data-id="${i}" class="selectable" data-word="${t}">${t}</span>` : `<span data-id="${i}">${t}</span>`;
             }))
         }).join(' ');
+    }
+
+    function checkHowManyThings(s,e) {
+        var whitespace = "&nbsp";
+        var numb = 7;
+        var newwhite = "";
+        for(var i = 0; i < numb; i++) {
+            newwhite += whitespace;
+        }
+       
+        if(s.innerHTML.length < 1) {
+            s.innerHTML = newwhite;
+        } else {
+            console.log("white");
+            s.innerHTML = s.innerHTML.replace(newwhite, "");
+        }
     }
 </script>
 </head>
 <body>
-<div id="maamer_content">
+<div id="maamer_content" dir="rtl">
     
+</div>
+<div id="word_edit">
+
+<label>
+<span class="titlething">Meaning</span>
+<span class="new_input" data-placeholder="Meaning:" onkeyup="checkHowManyThings(this)" data-name="meaning" contenteditable="true">some default text</span></br>
+</label>
+<label>
+<span class="titlething">Phonetic</span>
+<span class="new_input" data-placeholder="Phonetic:" onkeyup="checkHowManyThings(this)" contenteditable="true" data-name="phonetic">hi</span></br>
+</label>
+<label>
+<span class="titlething">Other</span>
+<span class="new_input" data-placeholder="Other:" onkeyup="checkHowManyThings(this)" contenteditable="true" data-name="other">test</span></br>
+</label>
+<button data-name="done">Done!</button>
 </div>
 </body>
 </html>
