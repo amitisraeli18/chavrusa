@@ -12,7 +12,7 @@
     }
 </script>
 <script>
-    var socket = io();
+    var socket = io('http://chavrusa-chavrusa.193b.starter-ca-central-1.openshiftapps.com/:8000/', {'forceNew':true });
     var maamerTxt = '';
     var shtikles = [];
     socket.on("maamer loaded", function(maamer) {
