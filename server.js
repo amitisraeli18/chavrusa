@@ -2,10 +2,10 @@
   var server=require("http").createServer(start);
   var io = require("socket.io")(server);
   var shtikles = [];
-
+  var port = process.env.PORT || 8080;
 
   function start(r,res) {
-    console.log("Hello World!"); 
+    console.log("Hello World!", process.env); 
     res.writeHead(200, {'Content-Type':'text/html'});
     fs.readFile("chavruta.html", function(error, data) {
         if(error) {
@@ -38,4 +38,4 @@
       });
  }
  
- server.listen(8080);
+ server.listen(port);
