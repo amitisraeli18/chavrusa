@@ -1,0 +1,13 @@
+{
+    "name": "Chavruta",
+    "version": "0.0.1",
+    "description": "App",
+    "dependencies": {
+        "socket.io": "^2.1.1"
+    },
+    "author": "us",
+    "main":"server.js",
+    "scripts":{
+        "start":"node server.js"
+    }
+}

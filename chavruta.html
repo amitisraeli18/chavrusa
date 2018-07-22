@@ -1,0 +1,60 @@
+<html>
+<head>
+    <style>
+    .selected {
+        background:green;
+    }
+    </style>
+<script src="/socket.io/socket.io.js"></script>
+<script>
+    function q(ph) {
+        return document.querySelectorAll(ph);
+    }
+</script>
+<script>
+    var socket = io();
+    var maamerTxt = '';
+    var shtikles = [];
+    socket.on("maamer loaded", function(maamer) {
+        maamerTxt = maamer;
+        maamerTxt = addSpansToText(maamerTxt);
+        maamer_content.innerHTML = maamerTxt;
+        makeClickable();
+    });
+    
+    socket.on("selected", function(idx) {
+        shtikles[idx].selected = true; 
+        console.log(shtikles[idx]);
+        shtikles[idx].word.className = "selected";  
+    });
+
+    function makeClickable() {
+        var spans = q("#maamer_content span");
+        
+        spans.forEach(function(item, idx) {
+            shtikles[idx] = {id:idx, word:item, selected:false};
+            if(item.hasAttribute("data-word")) {
+                item.addEventListener("click", function(e) {
+                    item.className = "selected";
+                    socket.emit("word clicked", idx);
+                });
+            }
+        });
+      //  socket.emit("word list", shtikles);
+    }
+
+    function addSpansToText(txt) {
+        return txt.split(' ').map((z, i) => {
+            return (z.replace(new RegExp("([\u0590-\u05FF\"]+)|([^\u0590-\u05FF\"]+)","g"), (t) => {
+                return /[\u0590-\u05FF\"]+/.test(t) ? `<span data-id="${i}" data-word="${t}">${t}</span>` : `<span data-id="${i}">${t}</span>`;
+            }))
+        }).join(' ');
+    }
+</script>
+</head>
+<body>
+<div id="maamer_content">
+    
+</div>
+</body>
+</html>
