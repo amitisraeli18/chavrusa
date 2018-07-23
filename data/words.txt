@@ -1,0 +1,1 @@
+[{"meaning":"the explanation","sounding":"habeer","other":"","hebrew":"הביאור"},{"meaning":"yeah","sounding":"","other":"","hebrew":"נמצאים"},{"meaning":"in darkness","sounding":"ba-a-faylah","other":"","hebrew":"באפילה"},{"meaning":"","sounding":"","other":"","hebrew":"באור"},{"meaning":"","sounding":"","other":"","hebrew":"ישנם"}]

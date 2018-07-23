@@ -2,7 +2,11 @@
 <head>
     <style>
    
-
+    .content {
+        width:500px;
+        margin:0 auto;
+        margin-top:200px;
+    }
 
     .selectable {
         cursor:pointer;
@@ -63,7 +67,20 @@
         border-bottom:1px solid black;
        
     }
+    [contenteditable=true] {
+        cursor:text;
+        min-width:20px;
+        display:inline-block;
+    }
 
+    [contenteditable=true]:empty:before {
+        border:0;
+        outline:0;
+        background:transparent;
+        border-bottom:1px solid black;
+        content:attr(placeholder);
+        color:gray;
+    }
    
     .titlething {
         display:inline-block;
@@ -74,9 +91,10 @@
     }
 
     #word_edit:after {
+        z-index:20;
         border-top:15px solid #A1C9E4;
         border-right:15px solid transparent;
-        border-bottom:15px solid transparent;
+        border-bottom:20px solid transparent;
         border-left:15px solid transparent;
         margin-left:-15px;
     }
@@ -101,11 +119,14 @@
     }
 </script>
 <script>
-    var socket = io("10.0.0.36:8080");
+    var socket = io();
     var maamerTxt = '';
     var shtikles = [];
+    var words = [];
+    var currentID=0;
     var finishedLine = false;
     socket.on("maamer loaded", function(maamer) {
+        console.log('maamer');
         maamerTxt = maamer;
         maamerTxt = addSpansToText(maamerTxt);
         maamer_content.innerHTML = maamerTxt;
@@ -118,15 +139,22 @@
         shtikles[idx].word.className = "selected";  
     });
 
+    socket.on("word added", function(wordObj) {
+      //  words[wordObj.idx] = wordObj.word;
+      console.log("savbed!", wordObj);
+    });
+
     function makeClickable() {
         var spans = q("#maamer_content span");
         spans.forEach(function(item, idx) {
             shtikles[idx] = {id:idx, word:item.innerHTML, selected:false, obj:item};
             if(item.hasAttribute("data-word")) {
                 item.addEventListener("click", function(e) {
+                 
                     q(".selected").forEach(function(z,i) {
                         z.className = "selectable";
                     });
+                    currentID = idx;
                     item.className = "selected";
                     
                     
@@ -150,6 +178,7 @@
     }
 
     function updateEditbox(idx) {
+        showElement(word_edit);
         var x = shtikles[idx].obj.offsetLeft,
         y = shtikles[idx].obj.offsetTop,
         height=word_edit.clientHeight,
@@ -175,42 +204,57 @@
         }).join(' ');
     }
 
+    function saveWord() {
+        var meaning = q("[data-name='meaning'")[0];
+        var sounding = q("[data-name='phonetic'")[0];
+        var other = q("[data-name='other'")[0];
+        var word = {};
+    
+        word.meaning = meaning.innerHTML;
+        word.sounding = sounding.innerHTML;
+        word.other = other.innerHTML;
+        if(currentID) {
+            word.hebrew = shtikles[currentID].word;
+            socket.emit("new word", {id:currentID, word:word});
+            
+        }
+        hideElement(word_edit);
+        meaning.innerHTML = sounding.innerHTML = other.innerHTML = "";
+    }
+
+    function showElement(el) {
+        el.style.display = "";
+    }
+    function hideElement(el) {
+        el.style.display="none";
+    }
     function checkHowManyThings(s,e) {
-        var whitespace = "&nbsp";
-        var numb = 7;
-        var newwhite = "";
-        for(var i = 0; i < numb; i++) {
-            newwhite += whitespace;
-        }
-       
-        if(s.innerHTML.length < 1) {
-            s.innerHTML = newwhite;
-        } else {
-            console.log("white");
-            s.innerHTML = s.innerHTML.replace(newwhite, "");
-        }
+        
+     
     }
 </script>
 </head>
 <body>
+<div class="content">
 <div id="maamer_content" dir="rtl">
     
 </div>
-<div id="word_edit">
+</div>
 
+<div id="word_edit">
 <label>
 <span class="titlething">Meaning</span>
-<span class="new_input" data-placeholder="Meaning:" onkeyup="checkHowManyThings(this)" data-name="meaning" contenteditable="true">some default text</span></br>
+<span class="new_input" placeholder="What does this word mean???" onkeyup="checkHowManyThings(this)" data-name="meaning" contenteditable="true"></span></br>
 </label>
 <label>
 <span class="titlething">Phonetic</span>
-<span class="new_input" data-placeholder="Phonetic:" onkeyup="checkHowManyThings(this)" contenteditable="true" data-name="phonetic">hi</span></br>
+<span class="new_input" placeholder="How does it sound???!" onkeyup="checkHowManyThings(this)" contenteditable="true" data-name="phonetic"></span></br>
 </label>
 <label>
 <span class="titlething">Other</span>
-<span class="new_input" data-placeholder="Other:" onkeyup="checkHowManyThings(this)" contenteditable="true" data-name="other">test</span></br>
+<span class="new_input" placeholder="Anything else?!" onkeyup="checkHowManyThings(this)" contenteditable="true" data-name="other"></span></br>
 </label>
-<button data-name="done">Done!</button>
+<button data-name="done" onclick="saveWord()">Done!</button>
 </div>
 </body>
 </html>
