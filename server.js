@@ -3,8 +3,8 @@
   var io = require("socket.io")(server);
   var words = [];
   var curID, curWord;
-  var port = process.env.OPENSHIFT_NODEJS_PORT || 8080, 
-        id = process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1";
+  var port = process.env.IP || process.env.OPENSHIFT_NODEJS_PORT || 8080, 
+        id = process.env.PORT || process.env.OPENSHIFT_NODEJS_IP || "127.0.0.1";
 
   function saveWords() {
     fs.writeFile("./data/words.txt", JSON.stringify(words), function(err) {
